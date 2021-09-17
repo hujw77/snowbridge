@@ -87,6 +87,7 @@ decl_storage! {
 decl_event! {
 	pub enum Event {
 		MessageAccepted(MessageNonce),
+		Committed(MessageNonce, MessageNonce),
 	}
 }
 
@@ -183,6 +184,10 @@ impl<T: Config> Module<T> {
 
 		let key = Self::make_offchain_key(commitment_hash);
 		offchain_index::set(&*key, &messages.encode());
+
+		let first = &messages[0];
+		let last = &messages[messages.len() - 1];
+		<Module<T>>::deposit_event(Event::Committed(first.nonce, last.nonce));
 
 		T::WeightInfo::on_initialize(
 			messages.len() as u32,

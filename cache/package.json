@@ -1,0 +1,29 @@
+{
+  "files": [
+    "dist/"
+  ],
+  "bin": {
+    "polkadot-launch": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepack": "tsc",
+    "lint": "tsc --noEmit && eslint \"**/*.{js,ts}\" --quiet --fix",
+    "start": "node dist/main.js"
+  },
+  "dependencies": {
+    "@polkadot/api": "^5.9.1",
+    "async": "^3.2.1",
+    "ioredis": "^4.27.9"
+  },
+  "devDependencies": {
+    "@types/async": "^3.2.7",
+    "@types/ioredis": "^4.27.4",
+    "@types/node": "^16.9.2",
+    "@typescript-eslint/parser": "^4.31.1",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "ts-node": "^10.2.1",
+    "typescript": "^4.4.3"
+  }
+}

@@ -14,12 +14,15 @@
   "dependencies": {
     "@polkadot/api": "^5.9.1",
     "async": "^3.2.1",
-    "ioredis": "^4.27.9"
+    "ioredis": "^4.27.9",
+    "winston": "^3.3.3",
+    "yargs": "^17.1.1"
   },
   "devDependencies": {
     "@types/async": "^3.2.7",
     "@types/ioredis": "^4.27.4",
     "@types/node": "^16.9.2",
+    "@types/yargs": "^17.0.2",
     "@typescript-eslint/parser": "^4.31.1",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",

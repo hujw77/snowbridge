@@ -531,10 +531,9 @@ parameter_types! {
 }
 
 pub struct FeeConverter;
-impl Convert<U256, Balance> for FeeConverter {
-	fn convert(amount: U256) -> Balance {
+impl Convert<U256, Option<Balance>> for FeeConverter {
+	fn convert(amount: U256) -> Option<Balance> {
 		dot_app::primitives::unwrap::<Runtime>(amount, Decimals::get())
-			.expect("Should not panic unless runtime is misconfigured")
 	}
 }
 
@@ -542,7 +541,7 @@ impl incentivized_channel_inbound::Config for Runtime {
 	type Event = Event;
 	type Verifier = ethereum_light_client::Module<Runtime>;
 	type MessageDispatch = dispatch::Module<Runtime>;
-	type Currency = Balances;
+	type FeeAsset = Balances;
 	type SourceAccount = SourceAccount;
 	type TreasuryAccount = TreasuryAccount;
 	type FeeConverter = FeeConverter;

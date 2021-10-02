@@ -1,6 +1,6 @@
 use ethabi::{Event, Param, ParamKind, Token};
 use snowbridge_ethereum::{log::Log, H160};
-use sp_runtime::traits::Convert;
+use sp_runtime::traits::{Convert, Zero};
 use sp_core::RuntimeDebug;
 use sp_std::prelude::*;
 use sp_std::convert::TryFrom;
@@ -63,7 +63,7 @@ impl<T> TryFrom<Log> for Envelope<T>
 		};
 
 		let fee = match iter.next().ok_or(EnvelopeDecodeError)? {
-			Token::Uint(value) => T::FeeConverter::convert(value),
+			Token::Uint(value) => T::FeeConverter::convert(value).unwrap_or(Zero::zero()),
 			_ => return Err(EnvelopeDecodeError)
 		};
 

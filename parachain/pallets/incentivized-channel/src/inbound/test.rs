@@ -127,9 +127,9 @@ parameter_types! {
 
 pub struct FeeConverter<T: Config>(PhantomData<T>);
 
-impl<T: Config> Convert<U256, BalanceOf<T>> for FeeConverter<T> {
-	fn convert(_: U256) -> BalanceOf<T> {
-		100u32.into()
+impl<T: Config> Convert<U256, Option<BalanceOf<T>>> for FeeConverter<T> {
+	fn convert(_: U256) -> Option<BalanceOf<T>> {
+		Some(100u32.into())
 	}
 }
 
@@ -137,7 +137,7 @@ impl incentivized_inbound_channel::Config for Test {
 	type Event = Event;
 	type Verifier = MockVerifier;
 	type MessageDispatch = MockMessageDispatch;
-	type Currency = Balances;
+	type FeeAsset = Balances;
 	type SourceAccount = SourceAccount;
 	type TreasuryAccount = TreasuryAccount;
 	type FeeConverter = FeeConverter<Self>;
@@ -288,7 +288,7 @@ fn test_handle_fee() {
 
 		let fee = 10000000000; // 1 DOT
 
-		IncentivizedInboundChannel::handle_fee(fee, &relayer);
+		IncentivizedInboundChannel::apportion_fee(fee, &relayer);
 		assert_eq!(Balances::free_balance(&TreasuryAccount::get()), 2000000001);
 		assert_eq!(Balances::free_balance(&relayer), 8000000001);
 	});

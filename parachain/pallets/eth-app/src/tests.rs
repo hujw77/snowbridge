@@ -21,7 +21,7 @@ fn mints_after_handling_ethereum_event() {
 				snowbridge_dispatch::RawOrigin(peer_contract).into(),
 				sender,
 				recipient.clone(),
-				amount.into()
+				amount
 			)
 		);
 		assert_eq!(Asset::balance(&recipient), amount.into());
@@ -38,16 +38,16 @@ fn burn_should_emit_bridge_event() {
 	new_tester().execute_with(|| {
 		let recipient = H160::repeat_byte(2);
 		let bob: AccountId = Keyring::Bob.into();
-		Asset::deposit(&bob, 500.into()).unwrap();
+		Asset::deposit(&bob, 500).unwrap();
 
 		assert_ok!(EthApp::burn(
 			Origin::signed(bob.clone()),
 			ChannelId::Incentivized,
 			recipient.clone(),
-			20.into()));
+			20));
 
 		assert_eq!(
-			Event::EthApp(crate::Event::<Test>::Burned(bob, recipient, 20.into())),
+			Event::EthApp(crate::Event::<Test>::Burned(bob, recipient, 20)),
 			last_event()
 		);
 	});
@@ -59,14 +59,14 @@ fn should_not_burn_on_commitment_failure() {
 		let sender: AccountId = Keyring::Bob.into();
 		let recipient = H160::repeat_byte(9);
 
-		Asset::deposit(&sender, 500.into()).unwrap();
+		Asset::deposit(&sender, 500).unwrap();
 
 		assert_noop!(
 			EthApp::burn(
 				Origin::signed(sender.clone()),
 				ChannelId::Basic,
 				recipient.clone(),
-				20.into()
+				20
 			),
 			DispatchError::Other("some error!")
 		);

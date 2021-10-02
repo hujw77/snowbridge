@@ -13,9 +13,9 @@ enum ChannelId {
 }
 
 contract ERC20App is AccessControl {
-    using ScaleCodec for uint256;
+    using ScaleCodec for uint128;
 
-    mapping(address => uint256) public balances;
+    mapping(address => uint128) public balances;
 
     mapping(ChannelId => Channel) public channels;
 
@@ -25,14 +25,14 @@ contract ERC20App is AccessControl {
         address token,
         address sender,
         bytes32 recipient,
-        uint256 amount
+        uint128 amount
     );
 
     event Unlocked(
         address token,
         bytes32 sender,
         address recipient,
-        uint256 amount
+        uint128 amount
     );
 
     struct Channel {
@@ -59,7 +59,7 @@ contract ERC20App is AccessControl {
     function lock(
         address _token,
         bytes32 _recipient,
-        uint256 _amount,
+        uint128 _amount,
         ChannelId _channelId
     ) public {
         require(
@@ -89,7 +89,7 @@ contract ERC20App is AccessControl {
         address _token,
         bytes32 _sender,
         address _recipient,
-        uint256 _amount
+        uint128 _amount
     ) public onlyRole(INBOUND_CHANNEL_ROLE) {
         require(_amount > 0, "Must unlock a positive amount");
         require(
@@ -110,7 +110,7 @@ contract ERC20App is AccessControl {
         address _token,
         address _sender,
         bytes32 _recipient,
-        uint256 _amount
+        uint128 _amount
     ) private pure returns (bytes memory) {
         return
             abi.encodePacked(
@@ -119,7 +119,7 @@ contract ERC20App is AccessControl {
                 _sender,
                 bytes1(0x00), // Encode recipient as MultiAddress::Id
                 _recipient,
-                _amount.encode256()
+                _amount.encode128()
             );
     }
 }

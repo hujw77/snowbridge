@@ -10,19 +10,25 @@ import "./OutboundChannel.sol";
 enum ChannelId {Basic, Incentivized}
 
 contract ETHApp is RewardSource, AccessControl {
-    using ScaleCodec for uint256;
+    using ScaleCodec for uint128;
 
-    uint256 public balance;
+    uint128 public balance;
 
     mapping(ChannelId => Channel) public channels;
 
-    event Locked(address sender, bytes32 recipient, uint256 amount);
+    event Locked(address sender, bytes32 recipient, uint128 amount);
 
-    event Unlocked(bytes32 sender, address recipient, uint256 amount);
+    event Unlocked(bytes32 sender, address recipient, uint128 amount);
 
     bytes2 constant MINT_CALL = 0x4101;
 
     bytes32 public constant REWARD_ROLE = keccak256("REWARD_ROLE");
+
+    // Minimum amount per lockup.
+    uint256 public constant MIN_LOCK_VALUE = 0.001 ether;
+
+    // Maximum amount per lockup
+    uint256 public constant MAX_LOCK_VALUE = 2**128 - 1;
 
     struct Channel {
         address inbound;
@@ -53,18 +59,22 @@ contract ETHApp is RewardSource, AccessControl {
     }
 
     function lock(bytes32 _recipient, ChannelId _channelId) public payable {
-        require(msg.value > 0, "Value of transaction must be positive");
+        require(msg.value >= MIN_LOCK_VALUE, "Value must be more than MIN_LOCK_VALUE");
+        require(msg.value <= MAX_LOCK_VALUE, "Value must be less than MAX_LOCK_VALUE");
         require(
             _channelId == ChannelId.Basic ||
                 _channelId == ChannelId.Incentivized,
             "Invalid channel ID"
         );
 
-        balance = balance + msg.value;
+        // Can safely reduce precision due to the check against MAX_LOCK_VALUE above
+        uint128 amount = uint128(msg.value);
 
-        emit Locked(msg.sender, _recipient, msg.value);
+        balance = balance + amount;
 
-        bytes memory call = encodeCall(msg.sender, _recipient, msg.value);
+        emit Locked(msg.sender, _recipient, amount);
+
+        bytes memory call = encodeCall(msg.sender, _recipient, amount);
 
         OutboundChannel channel =
             OutboundChannel(channels[_channelId].outbound);
@@ -74,7 +84,7 @@ contract ETHApp is RewardSource, AccessControl {
     function unlock(
         bytes32 _sender,
         address payable _recipient,
-        uint256 _amount
+        uint128 _amount
     ) public onlyRole(INBOUND_CHANNEL_ROLE) {
         require(_amount > 0, "Must unlock a positive amount");
         require(
@@ -91,7 +101,7 @@ contract ETHApp is RewardSource, AccessControl {
     function encodeCall(
         address _sender,
         bytes32 _recipient,
-        uint256 _amount
+        uint128 _amount
     ) private pure returns (bytes memory) {
         return
             abi.encodePacked(
@@ -99,11 +109,11 @@ contract ETHApp is RewardSource, AccessControl {
                 _sender,
                 bytes1(0x00), // Encode recipient as MultiAddress::Id
                 _recipient,
-                _amount.encode256()
+                _amount.encode128()
             );
     }
 
-    function reward(address payable _recipient, uint256 _amount)
+    function reward(address payable _recipient, uint128 _amount)
         external
         override
         onlyRole(REWARD_ROLE)

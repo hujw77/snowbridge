@@ -11,12 +11,12 @@ use sp_core::H160;
 #[allow(unused_imports)]
 use crate::Pallet as Assets;
 
-fn set_balance<T: Config>(asset_id: &AssetId, who: &T::AccountId, amount: &U256) {
+fn set_balance<T: Config>(asset_id: &AssetId, who: &T::AccountId, amount: u128) {
 	TotalIssuance::insert(asset_id, amount);
 	Balances::<T>::insert(asset_id, who, amount);
 }
 
-fn get_balance<T: Config>(asset_id: &AssetId, who: &T::AccountId) -> U256 {
+fn get_balance<T: Config>(asset_id: &AssetId, who: &T::AccountId) -> u128 {
 	Balances::<T>::get(asset_id, who)
 }
 
@@ -26,13 +26,13 @@ benchmarks! {
 	// * `transfer` will add amount to destination account
 	transfer {
 		let caller: T::AccountId = whitelisted_caller();
-		let initial_amount = U256::from_str_radix("1000000000000000000", 10).unwrap();
-		let transfer_amount = U256::from_str_radix("500000000000000000", 10).unwrap();
+		let initial_amount = u128::from_str_radix("1000000000000000000", 10).unwrap();
+		let transfer_amount = u128::from_str_radix("500000000000000000", 10).unwrap();
 		let token = AssetId::Token(H160::zero());
 		let dest: T::AccountId = account("recipient", 0, 0);
 		let dest_lookup: <T::Lookup as StaticLookup>::Source = T::Lookup::unlookup(dest.clone());
 
-		set_balance::<T>(&token, &caller, &initial_amount);
+		set_balance::<T>(&token, &caller, initial_amount);
 
 	}: _(RawOrigin::Signed(caller.clone()), token, dest_lookup, transfer_amount)
 	verify {

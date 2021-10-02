@@ -22,7 +22,7 @@ fn mints_after_handling_ethereum_event() {
 				token,
 				sender,
 				recipient.clone(),
-				amount.into()
+				amount
 			)
 		);
 		assert_eq!(Assets::balance(AssetId::Token(token), &recipient), amount.into());
@@ -40,17 +40,17 @@ fn burn_should_emit_bridge_event() {
 		let token_id = H160::repeat_byte(1);
 		let recipient = H160::repeat_byte(2);
 		let bob: AccountId = Keyring::Bob.into();
-		Assets::deposit(AssetId::Token(token_id), &bob, 500.into()).unwrap();
+		Assets::deposit(AssetId::Token(token_id), &bob, 500).unwrap();
 
 		assert_ok!(Erc20App::burn(
 			Origin::signed(bob.clone()),
 			ChannelId::Incentivized,
 			token_id,
 			recipient.clone(),
-			20.into()));
+			20));
 
 		assert_eq!(
-			Event::Erc20App(crate::Event::<Test>::Burned(token_id, bob, recipient, 20.into())),
+			Event::Erc20App(crate::Event::<Test>::Burned(token_id, bob, recipient, 20)),
 			last_event()
 		);
 	});
@@ -63,7 +63,7 @@ fn should_not_burn_on_commitment_failure() {
 		let sender: AccountId = Keyring::Bob.into();
 		let recipient = H160::repeat_byte(9);
 
-		Assets::deposit(AssetId::Token(token_id), &sender, 500.into()).unwrap();
+		Assets::deposit(AssetId::Token(token_id), &sender, 500).unwrap();
 
 		assert_noop!(
 			Erc20App::burn(
@@ -71,7 +71,7 @@ fn should_not_burn_on_commitment_failure() {
 				ChannelId::Basic,
 				token_id,
 				recipient.clone(),
-				20.into()
+				20
 			),
 			DispatchError::Other("some error!")
 		);

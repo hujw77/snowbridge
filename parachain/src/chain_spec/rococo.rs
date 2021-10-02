@@ -4,7 +4,7 @@ use rococo_runtime::{
 	GenesisConfig, WASM_BINARY, Signature, AccountId, AuraId
 };
 use sc_service::{ChainType, Properties};
-use sp_core::{sr25519, Pair, Public, U256};
+use sp_core::{sr25519, Pair, Public};
 use sp_runtime::{Perbill, traits::{IdentifyAccount, Verify}};
 
 use super::{get_from_seed, Extensions};
@@ -109,7 +109,7 @@ fn testnet_genesis(
 			reward_fraction: Perbill::from_percent(80)
 		},
 		incentivized_outbound_channel: rococo_runtime::IncentivizedOutboundChannelConfig {
-			fee: U256::from_str_radix("10000000000000000", 10).unwrap(), // 0.01 SnowEther
+			fee: u128::from_str_radix("10000000000000000", 10).unwrap(), // 0.01 SnowEther
 			interval: 1,
 		},
 		assets: rococo_runtime::AssetsConfig {
@@ -117,7 +117,7 @@ fn testnet_genesis(
 				(
 					AssetId::ETH,
 					get_account_id_from_seed::<sr25519::Public>("Ferdie"),
-					U256::from_str_radix("1000000000000000000", 10).unwrap()
+					u128::from_str_radix("1000000000000000000", 10).unwrap()
 				)
 			]
 		},

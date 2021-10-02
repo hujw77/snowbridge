@@ -5,7 +5,6 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use sp_core::U256;
 use sp_std::{result, marker::PhantomData, prelude::*};
 use codec::Decode;
 
@@ -23,7 +22,7 @@ impl<
 		AccountIdConverter: Convert<MultiLocation, AccountId>,
 		AccountId: Clone,
 	> AssetsTransactor<Assets, AccountIdConverter, AccountId> {
-	fn match_assets(a: &MultiAsset) -> result::Result<(AssetId, U256), XcmError> {
+	fn match_assets(a: &MultiAsset) -> result::Result<(AssetId, u128), XcmError> {
 		let (id, amount) = match a {
 			MultiAsset::ConcreteFungible { id, amount } => (id, amount),
 			_ => return Err(XcmError::AssetNotFound),
@@ -37,9 +36,7 @@ impl<
 		let asset_id: AssetId = AssetId::decode(&mut key.as_ref())
 			.map_err(|_| XcmError::FailedToTransactAsset("AssetIdConversionFailed"))?;
 
-		let value: U256 = (*amount).into();
-
-		Ok((asset_id, value))
+		Ok((asset_id, *amount))
 	}
 }
 

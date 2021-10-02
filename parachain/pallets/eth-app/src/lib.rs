@@ -36,7 +36,7 @@ use frame_support::{
 };
 use sp_runtime::traits::StaticLookup;
 use sp_std::prelude::*;
-use sp_core::{H160, U256};
+use sp_core::H160;
 
 use snowbridge_core::{ChannelId, SingleAsset, OutboundRouter};
 
@@ -77,8 +77,8 @@ pub mod pallet {
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	#[pallet::metadata(T::AccountId = "AccountId")]
 	pub enum Event<T: Config> {
-		Burned(T::AccountId, H160, U256),
-		Minted(H160, T::AccountId, U256),
+		Burned(T::AccountId, H160, u128),
+		Minted(H160, T::AccountId, u128),
 	}
 
 	#[pallet::storage]
@@ -118,7 +118,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			channel_id: ChannelId,
 			recipient: H160,
-			amount: U256
+			amount: u128
 		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
@@ -142,7 +142,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			sender: H160,
 			recipient: <T::Lookup as StaticLookup>::Source,
-			amount: U256
+			amount: u128
 		) -> DispatchResult {
 			let who = T::CallOrigin::ensure_origin(origin)?;
 			if who != <Address<T>>::get() {

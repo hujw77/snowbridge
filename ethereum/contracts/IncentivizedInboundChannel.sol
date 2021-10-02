@@ -13,7 +13,7 @@ contract IncentivizedInboundChannel is AccessControl {
     struct Message {
         address target;
         uint64 nonce;
-        uint256 fee;
+        uint128 fee;
         bytes payload;
     }
 
@@ -81,7 +81,7 @@ contract IncentivizedInboundChannel is AccessControl {
         address payable _relayer,
         Message[] calldata _messages
     ) internal {
-        uint256 _rewardAmount = 0;
+        uint128 _rewardAmount = 0;
 
         for (uint256 i = 0; i < _messages.length; i++) {
             // Check message nonce is correct and increment nonce for replay protection

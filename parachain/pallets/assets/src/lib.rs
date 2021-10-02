@@ -36,7 +36,6 @@ use frame_support::{
 };
 
 use sp_runtime::traits::StaticLookup;
-use sp_core::U256;
 
 use snowbridge_core::assets::{AssetId, MultiAsset, SingleAsset};
 use sp_std::marker;
@@ -66,11 +65,11 @@ pub trait Config: system::Config {
 
 decl_storage! {
 	trait Store for Module<T: Config> as Assets {
-		pub TotalIssuance get(fn total_issuance): map hasher(blake2_128_concat) AssetId => U256;
-		pub Balances get(fn balances): double_map hasher(blake2_128_concat) AssetId, hasher(blake2_128_concat) T::AccountId => U256;
+		pub TotalIssuance get(fn total_issuance): map hasher(blake2_128_concat) AssetId => u128;
+		pub Balances get(fn balances): double_map hasher(blake2_128_concat) AssetId, hasher(blake2_128_concat) T::AccountId => u128;
 	}
 	add_extra_genesis {
-		config(balances): Vec<(AssetId, T::AccountId, U256)>;
+		config(balances): Vec<(AssetId, T::AccountId, u128)>;
 		build(|config: &GenesisConfig<T>| {
 			for &(ref asset_id, ref who, amount) in config.balances.iter() {
 				let total_issuance = TotalIssuance::get(asset_id);
@@ -86,7 +85,7 @@ decl_event!(
 	where
 		<T as system::Config>::AccountId,
 	{
-		Transferred(AssetId, AccountId, AccountId, U256),
+		Transferred(AssetId, AccountId, AccountId, u128),
 	}
 );
 
@@ -111,7 +110,7 @@ decl_module! {
 		pub fn transfer(origin,
 						asset_id: AssetId,
 						dest: <T::Lookup as StaticLookup>::Source,
-						amount: U256) -> DispatchResult {
+						amount: u128) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 			let dest = T::Lookup::lookup(dest)?;
 			<Self as MultiAsset<_>>::transfer(asset_id, &who, &dest, amount)
@@ -121,16 +120,16 @@ decl_module! {
 
 impl<T: Config> MultiAsset<T::AccountId> for Module<T> {
 
-	fn total_issuance(asset_id: AssetId) -> U256 {
+	fn total_issuance(asset_id: AssetId) -> u128 {
 		Module::<T>::total_issuance(asset_id)
 	}
 
-	fn balance(asset_id: AssetId, who: &T::AccountId) -> U256 {
+	fn balance(asset_id: AssetId, who: &T::AccountId) -> u128 {
 		Module::<T>::balances(asset_id, who)
 	}
 
-	fn deposit(asset_id: AssetId, who: &T::AccountId, amount: U256) -> DispatchResult  {
-		if amount.is_zero() {
+	fn deposit(asset_id: AssetId, who: &T::AccountId, amount: u128) -> DispatchResult  {
+		if amount == 0 {
 			return Ok(())
 		}
 		<Balances<T>>::try_mutate(asset_id, who, |balance| -> Result<(), DispatchError> {
@@ -144,8 +143,8 @@ impl<T: Config> MultiAsset<T::AccountId> for Module<T> {
 		})
 	}
 
-	fn withdraw(asset_id: AssetId, who: &T::AccountId, amount: U256) -> DispatchResult  {
-		if amount.is_zero() {
+	fn withdraw(asset_id: AssetId, who: &T::AccountId, amount: u128) -> DispatchResult  {
+		if amount == 0 {
 			return Ok(())
 		}
 		<Balances<T>>::try_mutate(asset_id, who, |balance| -> Result<(), DispatchError> {
@@ -163,9 +162,9 @@ impl<T: Config> MultiAsset<T::AccountId> for Module<T> {
 		asset_id: AssetId,
 		from: &T::AccountId,
 		to: &T::AccountId,
-		amount: U256)
+		amount: u128)
 	-> DispatchResult {
-		if amount.is_zero() || from == to {
+		if amount == 0 || from == to {
 			return Ok(())
 		}
 		<Balances<T>>::try_mutate(asset_id, from, |from_balance| -> DispatchResult {
@@ -187,24 +186,24 @@ where
 	I: Get<AssetId>,
 {
 
-	fn total_issuance() -> U256 {
+	fn total_issuance() -> u128 {
 		Module::<T>::total_issuance(I::get())
 	}
 
-	fn balance(who: &T::AccountId) -> U256 {
+	fn balance(who: &T::AccountId) -> u128 {
 		Module::<T>::balances(I::get(), who)
 	}
 
 	fn deposit(
 		who: &T::AccountId,
-		amount: U256,
+		amount: u128,
 	) -> DispatchResult {
 		<Module<T> as MultiAsset<_>>::deposit(I::get(), who, amount)
 	}
 
 	fn withdraw(
 		who: &T::AccountId,
-		amount: U256,
+		amount: u128,
 	) -> DispatchResult {
 		<Module<T> as MultiAsset<_>>::withdraw(I::get(), who, amount)
 	}
@@ -212,7 +211,7 @@ where
 	fn transfer(
 		source: &T::AccountId,
 		dest: &T::AccountId,
-		amount: U256,
+		amount: u128,
 	) -> DispatchResult {
 		<Module<T> as MultiAsset<_>>::transfer(I::get(), source, dest, amount)
 	}

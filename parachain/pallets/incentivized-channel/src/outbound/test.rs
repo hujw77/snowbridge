@@ -95,7 +95,7 @@ pub fn new_tester() -> sp_io::TestExternalities {
 
 	let config: incentivized_outbound_channel::GenesisConfig<Test> = incentivized_outbound_channel::GenesisConfig {
 		interval: 1u64,
-		fee: 100.into(),
+		fee: 100,
 	};
 	config.assimilate_storage(&mut storage).unwrap();
 
@@ -112,7 +112,7 @@ fn test_submit() {
 		let who: AccountId = Keyring::Bob.into();
 
 		// Deposit enough money to cover fees
-		FeeCurrency::deposit(&who, 300.into()).unwrap();
+		FeeCurrency::deposit(&who, 300).unwrap();
 
 		assert_ok!(IncentivizedOutboundChannel::submit(&who, target, &vec![0, 1, 2]));
 		assert_eq!(<Nonce<Test>>::get(), 1);
@@ -129,11 +129,11 @@ fn test_submit_fees_burned() {
 		let who: AccountId = Keyring::Bob.into();
 
 		// Deposit enough money to cover fees
-		FeeCurrency::deposit(&who, 300.into()).unwrap();
+		FeeCurrency::deposit(&who, 300).unwrap();
 
 		assert_ok!(IncentivizedOutboundChannel::submit(&who, target, &vec![0, 1, 2]));
 
-		assert_eq!(FeeCurrency::balance(&who), 200.into());
+		assert_eq!(FeeCurrency::balance(&who), 200);
 	})
 }
 
@@ -143,7 +143,7 @@ fn test_submit_not_enough_funds() {
 		let target = H160::zero();
 		let who: AccountId = Keyring::Bob.into();
 
-		FeeCurrency::deposit(&who, 50.into()).unwrap();
+		FeeCurrency::deposit(&who, 50).unwrap();
 
 		assert_noop!(
 			IncentivizedOutboundChannel::submit(&who, target, &vec![0, 1, 2]),
@@ -160,7 +160,7 @@ fn test_submit_exceeds_queue_limit() {
 		let who: AccountId = Keyring::Bob.into();
 
 		// Deposit enough money to cover fees
-		FeeCurrency::deposit(&who, 1000.into()).unwrap();
+		FeeCurrency::deposit(&who, 1000).unwrap();
 
 		let max_messages = MaxMessagesPerCommit::get();
 		(0..max_messages).for_each(
@@ -181,7 +181,7 @@ fn test_set_fee_not_authorized() {
 		assert_noop!(
 			IncentivizedOutboundChannel::set_fee(
 				Origin::signed(bob),
-				1000.into()
+				1000
 			),
 			DispatchError::BadOrigin
 		);

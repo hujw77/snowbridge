@@ -241,7 +241,7 @@ pub mod pallet {
 		}
 
 		fn make_offchain_key(hash: H256) -> Vec<u8> {
-			(T::INDEXING_PREFIX, ChannelId::Incentivized, hash).encode()
+			(T::INDEXING_PREFIX, ChannelId::Basic, hash).encode()
 		}
 	}
 }

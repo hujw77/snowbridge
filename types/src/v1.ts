@@ -1,3 +1,4 @@
+import { u64 } from "@polkadot/types";
 import type { RegistryTypes, OverrideModuleType, AliasDefinition } from "@polkadot/types/types";
 
 export const alias: AliasDefinition = {
@@ -61,6 +62,12 @@ export const types: RegistryTypes = {
   PruningRange: {
     oldestUnprunedBlock: "u64",
     oldestBlockToKeep: "u64",
+  },
+  EthereumDifficultyConfig: {
+    byzantiumForkBlock: "u64",
+    constantinopleForkBlock: "u64",
+    muirGlacierForkBlock: "u64",
+    londonForkBlock: "u64"
   },
   AssetId: {
     _enum: {

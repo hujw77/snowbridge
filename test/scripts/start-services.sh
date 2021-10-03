@@ -79,11 +79,11 @@ start_polkadot_launch()
         | .genesis.runtime.parachainInfo.parachainId = 1000
         | .para_id = 1000
         ' \
-        "$output_dir/spec.json" | sponge "$output_dir/spec.json"
+        "$output_dir/spec.json" | scripts/fix-jq-output.sh | sponge "$output_dir/spec.json"
 
     if [[ -n "${TEST_MALICIOUS_APP+x}" ]]; then
         jq '.genesis.runtime.dotApp.address = "0x433488cec14C4478e5ff18DDC7E7384Fc416f148"' \
-        "$output_dir/spec.json" | sponge "$output_dir/spec.json"
+        "$output_dir/spec.json" | scripts/fix-jq-output.sh | sponge "$output_dir/spec.json"
     fi
 
     jq \

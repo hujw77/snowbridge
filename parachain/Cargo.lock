@@ -5028,6 +5028,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-assets"
+version = "4.0.0-dev"
+source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.10#acb44df78015906174daf359b40916b7bef58c57"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-aura"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.10#acb44df78015906174daf359b40916b7bef58c57"
@@ -9731,11 +9744,13 @@ dependencies = [
  "frame-support",
  "frame-system",
  "hex-literal",
+ "pallet-assets",
+ "pallet-balances",
+ "pallet-randomness-collective-flip",
  "parity-scale-codec",
  "rlp",
  "rustc-hex",
  "serde",
- "snowbridge-assets",
  "snowbridge-core",
  "snowbridge-dispatch",
  "snowbridge-ethereum",
@@ -9778,11 +9793,12 @@ dependencies = [
  "frame-support",
  "frame-system",
  "hex-literal",
+ "pallet-assets",
+ "pallet-balances",
  "parity-scale-codec",
  "rlp",
  "rustc-hex",
  "serde",
- "snowbridge-assets",
  "snowbridge-core",
  "snowbridge-dispatch",
  "snowbridge-ethereum",

@@ -18,7 +18,7 @@ pub mod types;
 
 pub use types::{ChannelId, Message, MessageId, MessageNonce, Proof};
 
-pub use assets::{AssetId, MultiAsset, SingleAsset};
+pub use assets::{AssetId, CreateAsset, MultiAsset, SingleAsset};
 
 pub use nft::{ERC721TokenData, TokenInfo};
 

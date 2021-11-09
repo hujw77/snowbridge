@@ -1,16 +1,22 @@
 use frame_support::dispatch::DispatchResult;
 
-use codec::{Decode, Encode};
+use codec::{Decode, Encode, MaxEncodedLen};
 use sp_core::{RuntimeDebug, H160, U256};
 
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 
-#[derive(Encode, Decode, Copy, Clone, PartialEq, Eq, PartialOrd, RuntimeDebug)]
+#[derive(Encode, Decode, Copy, Clone, PartialEq, Eq, PartialOrd, MaxEncodedLen, RuntimeDebug)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub enum AssetId {
-	ETH,
+	Ether,
 	Token(H160),
+}
+
+impl Default for AssetId {
+	fn default() -> Self {
+		AssetId::Ether
+	}
 }
 
 pub trait MultiAsset<AccountId> {
@@ -40,4 +46,8 @@ pub trait SingleAsset<AccountId> {
 	fn withdraw(who: &AccountId, amount: U256) -> DispatchResult;
 
 	fn deposit(who: &AccountId, amount: U256) -> DispatchResult;
+}
+
+pub trait CreateAsset<AccountId, AssetId, Balance> {
+	fn create(asset_id: AssetId, owner: &AccountId, is_sufficient: bool, min_balance: Balance);
 }

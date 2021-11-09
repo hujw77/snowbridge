@@ -20,6 +20,7 @@ contract ERC20App is AccessControl {
     mapping(ChannelId => Channel) public channels;
 
     bytes2 constant MINT_CALL = 0x4201;
+    bytes2 constant CREATE_CALL = 0x4202;
 
     event Locked(
         address token,
@@ -115,6 +116,23 @@ contract ERC20App is AccessControl {
         return
             abi.encodePacked(
                 MINT_CALL,
+                _token,
+                _sender,
+                bytes1(0x00), // Encode recipient as MultiAddress::Id
+                _recipient,
+                _amount.encode256()
+            );
+    }
+
+    function encodeCreateCall(
+        address _token,
+        address _sender,
+        bytes32 _recipient,
+        uint256 _amount
+    ) private pure returns (bytes memory) {
+        return
+            abi.encodePacked(
+                CREATE_CALL,
                 _token,
                 _sender,
                 bytes1(0x00), // Encode recipient as MultiAddress::Id

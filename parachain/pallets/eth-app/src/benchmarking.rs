@@ -6,6 +6,8 @@ use frame_support::traits::UnfilteredDispatchable;
 use frame_system::RawOrigin;
 use sp_core::H160;
 
+use frame_support::traits::fungible::Inspect;
+
 #[allow(unused_imports)]
 use crate::Pallet as ETHApp;
 
@@ -16,13 +18,13 @@ benchmarks! {
 	burn {
 		let caller: T::AccountId = whitelisted_caller();
 		let recipient = H160::repeat_byte(2);
-		let amount: U256 = 500.into();
+		let amount = 500;
 
-		T::Asset::deposit(&caller, amount)?;
+		T::Asset::mint_into(&caller, amount)?;
 
 	}: _(RawOrigin::Signed(caller.clone()), ChannelId::Incentivized, recipient, amount)
 	verify {
-		assert_eq!(T::Asset::balance(&caller), U256::zero());
+		assert_eq!(T::Asset::balance(&caller), 0);
 	}
 
 	// Benchmark `mint` extrinsic under worst case conditions:
@@ -38,7 +40,7 @@ benchmarks! {
 		let recipient: T::AccountId = account("recipient", 0, 0);
 		let recipient_lookup: <T::Lookup as StaticLookup>::Source = T::Lookup::unlookup(recipient.clone());
 		let sender = H160::zero();
-		let amount: U256 = 500.into();
+		let amount = 500;
 
 		let call = Call::<T>::mint(sender, recipient_lookup, amount);
 

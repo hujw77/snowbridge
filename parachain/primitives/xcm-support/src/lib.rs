@@ -5,8 +5,8 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use sp_std::{result, marker::PhantomData, prelude::*};
 use codec::Decode;
+use sp_std::{marker::PhantomData, prelude::*, result};
 
 use xcm::v0::{Error as XcmError, Junction, MultiAsset, MultiLocation, Result as XcmResult};
 use xcm_executor::traits::{Convert, TransactAsset};
@@ -21,7 +21,8 @@ impl<
 		Assets: SnowbridgeMultiAsset<AccountId>,
 		AccountIdConverter: Convert<MultiLocation, AccountId>,
 		AccountId: Clone,
-	> AssetsTransactor<Assets, AccountIdConverter, AccountId> {
+	> AssetsTransactor<Assets, AccountIdConverter, AccountId>
+{
 	fn match_assets(a: &MultiAsset) -> result::Result<(AssetId, u128), XcmError> {
 		let (id, amount) = match a {
 			MultiAsset::ConcreteFungible { id, amount } => (id, amount),

@@ -1,29 +1,22 @@
-use snowbridge_core::{Verifier as VerifierConfig};
 use crate::mock::{
-	child_of_genesis_ethereum_header, child_of_header,
-	genesis_ethereum_block_hash, log_payload,
-	message_with_receipt_proof, receipt_root_and_proof,
-	AccountId, new_tester, new_tester_with_config,
-	ethereum_header_from_file, ethereum_header_proof_from_file,
-	ropsten_london_header, ropsten_london_message,
+	child_of_genesis_ethereum_header, child_of_header, ethereum_header_from_file,
+	ethereum_header_proof_from_file, genesis_ethereum_block_hash, log_payload,
+	message_with_receipt_proof, new_tester, new_tester_with_config, receipt_root_and_proof,
+	ropsten_london_header, ropsten_london_message, AccountId,
 };
+use snowbridge_core::Verifier as VerifierConfig;
 
 use crate::mock::mock_verifier_with_pow;
 
-use crate::mock::mock_verifier::{
-	Verifier,
-	Test,
-	Origin,
-};
+use crate::mock::mock_verifier::{Origin, Test, Verifier};
 
+use crate::{
+	BestBlock, Error, EthereumHeader, FinalizedBlock, GenesisConfig, Headers, HeadersByNumber,
+	PruningRange,
+};
 use frame_support::{assert_err, assert_ok};
 use sp_keyring::AccountKeyring as Keyring;
 use sp_runtime::DispatchError;
-use crate::{
-	BestBlock, Error, EthereumHeader, FinalizedBlock, GenesisConfig, Headers,
-	HeadersByNumber, PruningRange,
-};
-
 
 #[test]
 fn it_tracks_highest_difficulty_ethereum_chain() {
@@ -127,19 +120,11 @@ fn it_tracks_only_one_finalized_ethereum_fork() {
 		//       |
 		//       B3
 		assert_err!(
-			Verifier::import_header(
-				Origin::signed(ferdie.clone()),
-				block5,
-				Default::default(),
-			),
+			Verifier::import_header(Origin::signed(ferdie.clone()), block5, Default::default(),),
 			Error::<Test>::HeaderOnStaleFork,
 		);
 		assert_err!(
-			Verifier::import_header(
-				Origin::signed(ferdie.clone()),
-				block6,
-				Default::default(),
-			),
+			Verifier::import_header(Origin::signed(ferdie.clone()), block6, Default::default(),),
 			Error::<Test>::AncientHeader,
 		);
 	});
@@ -181,10 +166,7 @@ fn it_prunes_ethereum_headers_correctly() {
 			2,
 			1,
 		);
-		assert_eq!(
-			new_range,
-			PruningRange { oldest_unpruned_block: 1, oldest_block_to_keep: 1 },
-		);
+		assert_eq!(new_range, PruningRange { oldest_unpruned_block: 1, oldest_block_to_keep: 1 },);
 		assert!(!<Headers<Test>>::contains_key(genesis_ethereum_block_hash()));
 		assert!(!<HeadersByNumber<Test>>::contains_key(0));
 
@@ -194,10 +176,7 @@ fn it_prunes_ethereum_headers_correctly() {
 			1,
 			2,
 		);
-		assert_eq!(
-			new_range,
-			PruningRange { oldest_unpruned_block: 1, oldest_block_to_keep: 2 },
-		);
+		assert_eq!(new_range, PruningRange { oldest_unpruned_block: 1, oldest_block_to_keep: 2 },);
 		assert!(!<Headers<Test>>::contains_key(block1_hash));
 		assert!(<Headers<Test>>::contains_key(block4_hash));
 		assert_eq!(<HeadersByNumber<Test>>::get(1).unwrap(), vec![block4_hash]);
@@ -208,10 +187,7 @@ fn it_prunes_ethereum_headers_correctly() {
 			2,
 			4,
 		);
-		assert_eq!(
-			new_range,
-			PruningRange { oldest_unpruned_block: 3, oldest_block_to_keep: 4 },
-		);
+		assert_eq!(new_range, PruningRange { oldest_unpruned_block: 3, oldest_block_to_keep: 4 },);
 		assert!(!<Headers<Test>>::contains_key(block4_hash));
 		assert!(!<HeadersByNumber<Test>>::contains_key(1));
 		assert!(!<Headers<Test>>::contains_key(block2_hash));
@@ -266,11 +242,7 @@ fn it_rejects_ethereum_header_before_parent() {
 
 		let ferdie: AccountId = Keyring::Ferdie.into();
 		assert_err!(
-			Verifier::import_header(
-				Origin::signed(ferdie),
-				child_of_child,
-				Default::default(),
-			),
+			Verifier::import_header(Origin::signed(ferdie), child_of_child, Default::default(),),
 			Error::<Test>::MissingParentHeader,
 		);
 	});
@@ -279,9 +251,10 @@ fn it_rejects_ethereum_header_before_parent() {
 #[test]
 fn it_validates_proof_of_work() {
 	new_tester_with_config::<mock_verifier_with_pow::Test>(GenesisConfig {
-			initial_header: ethereum_header_from_file(11090290, ""),
-			initial_difficulty: 0.into(),
-	}).execute_with(|| {
+		initial_header: ethereum_header_from_file(11090290, ""),
+		initial_difficulty: 0.into(),
+	})
+	.execute_with(|| {
 		let header1 = ethereum_header_from_file(11090291, "");
 		let header1_proof = ethereum_header_proof_from_file(11090291, "");
 		let header2 = ethereum_header_from_file(11090292, "");
@@ -308,7 +281,8 @@ fn it_rejects_ethereum_header_with_low_difficulty() {
 	new_tester_with_config::<mock_verifier_with_pow::Test>(GenesisConfig {
 		initial_header: ethereum_header_from_file(11090291, ""),
 		initial_difficulty: 0.into(),
-	}).execute_with(|| {
+	})
+	.execute_with(|| {
 		let header = ethereum_header_from_file(11090292, "_low_difficulty");
 		let header_proof = ethereum_header_proof_from_file(11090292, "_low_difficulty");
 
@@ -333,10 +307,13 @@ fn it_confirms_receipt_inclusion_in_finalized_header() {
 	new_tester_with_config::<Test>(GenesisConfig {
 		initial_header: finalized_header,
 		initial_difficulty: 0.into(),
-	}).execute_with(|| {
-		assert_ok!(Verifier::verify(
-			&message_with_receipt_proof(log_payload(), finalized_header_hash, receipt_proof),
-		));
+	})
+	.execute_with(|| {
+		assert_ok!(Verifier::verify(&message_with_receipt_proof(
+			log_payload(),
+			finalized_header_hash,
+			receipt_proof
+		),));
 	});
 }
 
@@ -347,20 +324,22 @@ fn it_confirms_receipt_inclusion_in_ropsten_london_header() {
 	new_tester_with_config::<Test>(GenesisConfig {
 		initial_header: finalized_header,
 		initial_difficulty: 0.into(),
-	}).execute_with(|| {
+	})
+	.execute_with(|| {
 		assert_ok!(Verifier::verify(&ropsten_london_message()));
 	});
 }
-
 
 #[test]
 fn it_denies_receipt_inclusion_for_invalid_proof() {
 	new_tester::<Test>().execute_with(|| {
 		let (_, receipt_proof) = receipt_root_and_proof();
 		assert_err!(
-			Verifier::verify(
-				&message_with_receipt_proof(log_payload(), genesis_ethereum_block_hash(), receipt_proof),
-			),
+			Verifier::verify(&message_with_receipt_proof(
+				log_payload(),
+				genesis_ethereum_block_hash(),
+				receipt_proof
+			),),
 			Error::<Test>::InvalidProof,
 		);
 	});
@@ -376,12 +355,15 @@ fn it_denies_receipt_inclusion_for_invalid_log() {
 	new_tester_with_config::<Test>(GenesisConfig {
 		initial_header: finalized_header,
 		initial_difficulty: 0.into(),
-	}).execute_with(|| {
+	})
+	.execute_with(|| {
 		// Invalid log payload
 		assert_err!(
-			Verifier::verify(
-				&message_with_receipt_proof(Vec::new(), finalized_header_hash, receipt_proof.clone()),
-			),
+			Verifier::verify(&message_with_receipt_proof(
+				Vec::new(),
+				finalized_header_hash,
+				receipt_proof.clone()
+			),),
 			Error::<Test>::DecodeFailed,
 		);
 
@@ -389,9 +371,11 @@ fn it_denies_receipt_inclusion_for_invalid_log() {
 		let mut log = log_payload();
 		log[3] = 204;
 		assert_err!(
-			Verifier::verify(
-				&message_with_receipt_proof(log, finalized_header_hash, receipt_proof),
-			),
+			Verifier::verify(&message_with_receipt_proof(
+				log,
+				finalized_header_hash,
+				receipt_proof
+			),),
 			Error::<Test>::InvalidProof,
 		);
 	})
@@ -415,9 +399,11 @@ fn it_denies_receipt_inclusion_for_invalid_header() {
 
 		// Header hasn't been imported yet
 		assert_err!(
-			Verifier::verify(
-				&message_with_receipt_proof(log.clone(), block1_hash, receipt_proof.clone()),
-			),
+			Verifier::verify(&message_with_receipt_proof(
+				log.clone(),
+				block1_hash,
+				receipt_proof.clone()
+			),),
 			Error::<Test>::MissingHeader,
 		);
 
@@ -430,9 +416,11 @@ fn it_denies_receipt_inclusion_for_invalid_header() {
 
 		// Header has been imported but not finalized
 		assert_err!(
-			Verifier::verify(
-				&message_with_receipt_proof(log.clone(), block1_hash, receipt_proof.clone()),
-			),
+			Verifier::verify(&message_with_receipt_proof(
+				log.clone(),
+				block1_hash,
+				receipt_proof.clone()
+			),),
 			Error::<Test>::HeaderNotFinalized,
 		);
 
@@ -455,9 +443,11 @@ fn it_denies_receipt_inclusion_for_invalid_header() {
 
 		// A finalized header at this height exists, but it's not block1
 		assert_err!(
-			Verifier::verify(
-				&message_with_receipt_proof(log.clone(), block1_hash, receipt_proof.clone()),
-			),
+			Verifier::verify(&message_with_receipt_proof(
+				log.clone(),
+				block1_hash,
+				receipt_proof.clone()
+			),),
 			Error::<Test>::HeaderNotFinalized,
 		);
 
@@ -469,14 +459,18 @@ fn it_denies_receipt_inclusion_for_invalid_header() {
 
 		// A finalized header at a newer height exists, but block1 isn't its ancestor
 		assert_err!(
-			Verifier::verify(
-				&message_with_receipt_proof(log.clone(), block1_hash, receipt_proof.clone()),
-			),
+			Verifier::verify(&message_with_receipt_proof(
+				log.clone(),
+				block1_hash,
+				receipt_proof.clone()
+			),),
 			Error::<Test>::HeaderNotFinalized,
 		);
 		// Verification works for an ancestor of the finalized header
-		assert_ok!(Verifier::verify(
-			&message_with_receipt_proof(log.clone(), block1_alt_hash, receipt_proof.clone()),
-		));
+		assert_ok!(Verifier::verify(&message_with_receipt_proof(
+			log.clone(),
+			block1_alt_hash,
+			receipt_proof.clone()
+		),));
 	});
 }

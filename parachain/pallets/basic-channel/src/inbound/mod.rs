@@ -1,17 +1,14 @@
-mod envelope;
 mod benchmarking;
+mod envelope;
 pub mod weights;
 
 #[cfg(test)]
 mod test;
 
 use frame_system::ensure_signed;
+use snowbridge_core::{ChannelId, Message, MessageDispatch, MessageId, Verifier};
 use sp_core::H160;
 use sp_std::convert::TryFrom;
-use snowbridge_core::{
-	ChannelId, Message, MessageId,
-	MessageDispatch, Verifier,
-};
 
 use envelope::Envelope;
 pub use weights::WeightInfo;
@@ -76,9 +73,7 @@ pub mod pallet {
 	#[cfg(feature = "std")]
 	impl Default for GenesisConfig {
 		fn default() -> Self {
-			Self {
-				source_channel: Default::default(),
-			}
+			Self { source_channel: Default::default() }
 		}
 	}
 

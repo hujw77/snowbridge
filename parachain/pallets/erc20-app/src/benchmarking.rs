@@ -33,7 +33,7 @@ benchmarks! {
 		if let Ok(caller) = T::CallOrigin::try_origin(origin.clone()) {
 			<Address<T>>::put(caller);
 		} else {
-			return Err("Failed to extract caller address from origin");
+			return Err("Failed to extract caller address from origin".into());
 		}
 
 		let token = H160::repeat_byte(1);
@@ -42,7 +42,7 @@ benchmarks! {
 		let sender = H160::zero();
 		let amount: U256 = 500.into();
 
-		let call = Call::<T>::mint(token, sender, recipient_lookup, amount);
+		let call = Call::<T>::mint { token, sender, recipient: recipient_lookup, amount };
 
 	}: { call.dispatch_bypass_filter(origin)? }
 	verify {

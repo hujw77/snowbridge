@@ -4,9 +4,9 @@ use sp_std::marker::PhantomData;
 use frame_support::{
 	dispatch::{DispatchError, DispatchResult},
 	parameter_types,
-	traits::GenesisBuild,
+	traits::{Everything, GenesisBuild},
 };
-use frame_system as system;
+
 use sp_core::{H160, H256};
 use sp_runtime::{
 	testing::Header,
@@ -42,8 +42,8 @@ parameter_types! {
 	pub const BlockHashCount: u64 = 250;
 }
 
-impl system::Config for Test {
-	type BaseCallFilter = ();
+impl frame_system::Config for Test {
+	type BaseCallFilter = Everything;
 	type BlockWeights = ();
 	type BlockLength = ();
 	type Origin = Origin;
@@ -78,7 +78,7 @@ impl snowbridge_dispatch::Config for Test {
 	type Event = Event;
 	type MessageId = u64;
 	type Call = Call;
-	type CallFilter = ();
+	type CallFilter = Everything;
 }
 
 pub struct MockOutboundRouter<AccountId>(PhantomData<AccountId>);
@@ -86,7 +86,7 @@ pub struct MockOutboundRouter<AccountId>(PhantomData<AccountId>);
 impl<AccountId> OutboundRouter<AccountId> for MockOutboundRouter<AccountId> {
 	fn submit(channel: ChannelId, _: &AccountId, _: H160, _: &[u8]) -> DispatchResult {
 		if channel == ChannelId::Basic {
-			return Err(DispatchError::Other("some error!"))
+			return Err(DispatchError::Other("some error!"));
 		}
 		Ok(())
 	}
@@ -105,7 +105,7 @@ impl erc20_app::Config for Test {
 }
 
 pub fn new_tester() -> sp_io::TestExternalities {
-	let mut storage = system::GenesisConfig::default().build_storage::<Test>().unwrap();
+	let mut storage = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
 
 	let config = erc20_app::GenesisConfig { address: H160::repeat_byte(1) };
 	GenesisBuild::<Test>::assimilate_storage(&config, &mut storage).unwrap();

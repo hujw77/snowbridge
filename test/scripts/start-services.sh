@@ -82,7 +82,14 @@ start_polkadot_launch()
         "$output_dir/spec.json" | sponge "$output_dir/spec.json"
 
     if [[ -n "${TEST_MALICIOUS_APP+x}" ]]; then
+      echo 'Configuring genisis block for malicious app test.'
         jq '.genesis.runtime.dotApp.address = "0x433488cec14C4478e5ff18DDC7E7384Fc416f148"' \
+        "$output_dir/spec.json" | sponge "$output_dir/spec.json"
+    fi
+
+    if [[ -n "${TEST_XCM+x}" ]]; then
+      echo 'Configuring genisis block for XCM.'
+      jq '.genesis.runtime.assets.balances += [[{"Token": "0xdac17f958d2ee523a2206206994597c13d831ec7"},"5CiPPseXPECbkjWCa6MnjNokrgYjMqmKndv2rSnekmSK2DjL","0xde0b6b3a7640000"]]' \
         "$output_dir/spec.json" | sponge "$output_dir/spec.json"
     fi
 
@@ -98,6 +105,12 @@ start_polkadot_launch()
         ' \
         config/launch-config.json \
         > "$output_dir/launch-config.json"
+
+    if [[ -n "${TEST_XCM+x}" ]]; then
+      echo 'Configuring launch config for XCM.'
+      jq '.hrmpChannels += [{"sender":1000,"recipient":1001,"maxCapacity":8,"maxMessageSize":512}]'\
+        "$output_dir/launch-config.json" | sponge "$output_dir/launch-config.json"
+    fi
 
     polkadot-launch "$output_dir/launch-config.json" &
 

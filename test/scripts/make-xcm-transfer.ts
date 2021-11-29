@@ -21,11 +21,7 @@ const createTransferXcm = (
             id: api.createType('XcmAssetId', {
               Concrete: api.createType("MultiLocationV2", {
                 parents: api.createType('u8', 0),
-                interior: api.createType('JunctionsV2', {
-                  X1: api.createType('JunctionV2', {
-                    Parachain: api.createType('u32', 1000)
-                  })
-                })
+                interior: "Here"
               })
             }),
             fungibility: api.createType('FungibilityV2', {

@@ -4,11 +4,11 @@ import { Keyring } from "@polkadot/api";
 import { bundle } from "@snowfork/snowbridge-types";
 import yargs from "yargs"
 
-import type { MultiLocation } from "@polkadot/types/interfaces/xcm/types";
+import type { XcmAssetId } from "@polkadot/types/interfaces/xcm/types";
 
 const createTransferXcm = (
   api: ApiPromise,
-  fromLocation: MultiLocation,
+  fromLocation: XcmAssetId,
   toParaId: number,
   amount: number,
   toAddr: string
@@ -27,7 +27,13 @@ const createTransferXcm = (
             fungibility: api.createType('FungibilityV2', {
               Fungible: api.createType('Compact<u128>', 10_000_000)
             })
-          })
+          }),
+          api.createType("MultiAssetV2", {
+            id: fromLocation,
+            fungibility: api.createType('FungibilityV2', {
+              Fungible: api.createType('Compact<u128>', amount)
+            })
+          }),
         ])
       })
     ]
@@ -120,10 +126,15 @@ let main = async () => {
   const alice = keyring.addFromUri(argv.keyUri);
 
   let assetId = api.createType("AssetId", "ETH");
-  let location = api.createType("MultiLocation", {
-    X1: api.createType("Junction", {
-      GeneralKey: assetId.toHex(),
-    }),
+  let location = api.createType('XcmAssetId', {
+    Concrete: api.createType("MultiLocationV2", {
+      parents: api.createType('u8', 0),
+      interior: api.createType("JunctionsV2", {
+        X1: api.createType("JunctionV2", {
+          GeneralKey: assetId.toHex()
+        })
+      })
+    })
   });
 
   let xcm = createTransferXcm(

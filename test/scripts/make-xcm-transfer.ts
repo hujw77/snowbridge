@@ -16,26 +16,33 @@ const createTransferXcm = (
   return api.createType("VersionedXcm", {
     V2: [
       api.createType("InstructionV2", {
-        WithdrawAsset: api.createType("MultiAssetsV2", [
-          api.createType("MultiAssetV2", {
-            id: api.createType('XcmAssetId', {
+        BuyExecution: {
+          fees: api.createType("MultiAssetV2", {
+            id: api.createType("XcmAssetId", {
               Concrete: api.createType("MultiLocationV2", {
-                parents: api.createType('u8', 0),
+                parents: api.createType("u8", 0),
                 interior: "Here"
               })
             }),
-            fungibility: api.createType('FungibilityV2', {
-              Fungible: api.createType('Compact<u128>', 10_000_000)
+            fungibility: api.createType("FungibilityV2", {
+              Fungible: api.createType("Compact<u128>", 10_000_000)
             })
           }),
+          weightLimit: api.createType("WeightLimitV2", {
+            Limited: api.createType("Compact<u64>", 10_000_000)
+          }),
+        }
+      }),
+      api.createType("InstructionV2", {
+        WithdrawAsset: api.createType("MultiAssetsV2", [
           api.createType("MultiAssetV2", {
             id: fromLocation,
-            fungibility: api.createType('FungibilityV2', {
-              Fungible: api.createType('Compact<u128>', amount)
+            fungibility: api.createType("FungibilityV2", {
+              Fungible: api.createType("Compact<u128>", amount)
             })
           }),
         ])
-      })
+      }),
     ]
     //WithdrawAsset: api.createType("XcmWithdrawAsset", {
     //  assets: [
@@ -146,7 +153,7 @@ let main = async () => {
   );
 
   let unsub = await api.tx.polkadotXcm
-    .execute(xcm, 100000000)
+    .execute(xcm, 100_000_000)
     .signAndSend(alice, async (result) => {
       console.log(`Current status is ${result.status}`);
 

@@ -22,7 +22,6 @@ const createTransferXcm = (
               Concrete: api.createType("MultiLocationV2", {
                 parents: api.createType("u8", 1),
                 interior: "Here"
-                //api.createType("JunctionV2", "Parent"), // TODO: Figure out parents
               })
             }),
             fungibility: api.createType("FungibilityV2", {
@@ -53,12 +52,9 @@ const createTransferXcm = (
           dest: api.createType("MultiLocationV2", {
             parents: api.createType("u8", 1),
             interior: api.createType("JunctionsV2", {
-              X2: [
-                //api.createType("JunctionV2", "Parent"), // TODO: Figure out parents
-                api.createType("JunctionV2", {
-                  Parachain: api.createType("Compact<u32>", toParaId),
-                }),
-              ],
+              X1: api.createType("JunctionV2", {
+                Parachain: api.createType("Compact<u32>", toParaId),
+              }),
             }),
           }),
           xcm: api.createType("XcmV2", [
@@ -69,12 +65,9 @@ const createTransferXcm = (
                     Concrete: api.createType("MultiLocationV2", {
                       parents: api.createType("u8", 1),
                       interior: api.createType("JunctionsV2", {
-                        X2: [
-                          //api.createType("JunctionV2", "Parent"), // TODO: Figure out parents
-                          api.createType("JunctionV2", {
-                            Parachain: api.createType("Compact<u32>", toParaId),
-                          }),
-                        ],
+                        X1: api.createType("JunctionV2", {
+                          Parachain: api.createType("Compact<u32>", toParaId),
+                        }),
                       }),
                     })
                   }),
@@ -89,82 +82,27 @@ const createTransferXcm = (
             }),
             api.createType("InstructionV2", {
               DepositAsset: {
-                assets: "MultiAssetFilterV2",
-                maxAssets: "u32",
-                beneficiary: "MultiLocationV2",
+                assets: api.createType("MultiAssetFilterV2", {
+                  Wild: api.createType("WildMultiAssetV2", "All")
+                }),
+                maxAssets: api.createType("u32", 1),
+                beneficiary: api.createType("MultiLocationV2", {
+                  parents: api.createType("u8", 0),
+                  interior: api.createType("JunctionsV2", {
+                    X1: api.createType("JunctionV2", {
+                      AccountId32: {
+                        network: api.createType("NetworkId", "Any"),
+                        id: api.createType("AccountId", toAddr)
+                      }
+                    }),
+                  }),
+                }),
               }
             })
           ])
         }
       }),
-    ]
-      //WithdrawAsset: api.createType("XcmWithdrawAsset", {
-      //  assets: [
-      //    api.createType("MultiAsset", {
-      //      ConcreteFungible: api.createType("MultiAssetConcreteFungible", {
-      //        id: api.createType("MultiLocation", {
-      //          X1: api.createType("Junction", "Parent"),
-      //        }),
-      //        amount: api.createType("Compact<U128>", 10_000_000),
-      //      }),
-      //    }),
-      //    api.createType("MultiAsset", {
-      //      ConcreteFungible: api.createType("MultiAssetConcreteFungible", {
-      //        id: fromLocation,
-      //        amount: api.createType("Compact<U128>", amount),
-      //      }),
-      //    }),
-      //  ],
-      //  effects: [
-      //    api.createType("XcmOrder", {
-      //      BuyExecution: api.createType("XcmOrderBuyExecution", {
-      //        fees: api.createType("MultiAsset", "All"),
-      //        weight: 0,
-      //        debt: 3_000_000,
-      //        haltOnError: false,
-      //        xcm: [],
-      //      }),
-      //    }),
-      //    api.createType("XcmOrder", {
-      //      DepositReserveAsset: api.createType("XcmOrderDepositReserveAsset", {
-      //        assets: [api.createType("MultiAsset", "All")],
-      //        dest: api.createType("MultiLocation", {
-      //          X2: [
-      //            api.createType("Junction", "Parent"),
-      //            api.createType("Junction", {
-      //              Parachain: api.createType("Compact<U32>", toParaId),
-      //            }),
-      //          ],
-      //        }),
-      //        effects: [
-      //          api.createType("XcmOrder", {
-      //            BuyExecution: api.createType("XcmOrderBuyExecution", {
-      //              fees: api.createType("MultiAsset", "All"),
-      //              weight: 0,
-      //              debt: 3_000_000,
-      //              haltOnError: false,
-      //              xcm: [],
-      //            }),
-      //          }),
-      //          api.createType("XcmOrder", {
-      //            DepositAsset: api.createType("XcmOrderDepositAsset", {
-      //              assets: [api.createType("MultiAsset", "All")],
-      //              dest: api.createType("MultiLocation", {
-      //                X1: api.createType("Junction", {
-      //                  AccountId32: api.createType("AccountId32Junction", {
-      //                    network: api.createType("NetworkId", "Any"),
-      //                    id: toAddr,
-      //                  }),
-      //                }),
-      //              }),
-      //            }),
-      //          }),
-      //        ],
-      //      }),
-      //    }),
-      //  ],
-      //}),
-    )
+    ])
   });
 };
 

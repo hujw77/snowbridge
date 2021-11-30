@@ -14,18 +14,19 @@ const createTransferXcm = (
   toAddr: string
 ) => {
   return api.createType("VersionedXcm", {
-    V2: [
+    V2: api.createType("XcmV2", [
       api.createType("InstructionV2", {
         BuyExecution: {
           fees: api.createType("MultiAssetV2", {
             id: api.createType("XcmAssetId", {
               Concrete: api.createType("MultiLocationV2", {
-                parents: api.createType("u8", 0),
+                parents: api.createType("u8", 1),
                 interior: "Here"
+                //api.createType("JunctionV2", "Parent"), // TODO: Figure out parents
               })
             }),
             fungibility: api.createType("FungibilityV2", {
-              Fungible: api.createType("Compact<u128>", 10_000_000)
+              Fungible: api.createType("Compact<u128>", 3_000_000)
             })
           }),
           weightLimit: api.createType("WeightLimitV2", {
@@ -43,73 +44,127 @@ const createTransferXcm = (
           }),
         ])
       }),
+      api.createType("InstructionV2", {
+        DepositReserveAsset: {
+          assets: api.createType("MultiAssetFilterV2", {
+            Wild: api.createType("WildMultiAssetV2", "All")
+          }),
+          maxAssets: api.createType("u32", 1),
+          dest: api.createType("MultiLocationV2", {
+            parents: api.createType("u8", 1),
+            interior: api.createType("JunctionsV2", {
+              X2: [
+                //api.createType("JunctionV2", "Parent"), // TODO: Figure out parents
+                api.createType("JunctionV2", {
+                  Parachain: api.createType("Compact<u32>", toParaId),
+                }),
+              ],
+            }),
+          }),
+          xcm: api.createType("XcmV2", [
+            api.createType("InstructionV2", {
+              BuyExecution: {
+                fees: api.createType("MultiAssetV2", {
+                  id: api.createType("XcmAssetId", {
+                    Concrete: api.createType("MultiLocationV2", {
+                      parents: api.createType("u8", 1),
+                      interior: api.createType("JunctionsV2", {
+                        X2: [
+                          //api.createType("JunctionV2", "Parent"), // TODO: Figure out parents
+                          api.createType("JunctionV2", {
+                            Parachain: api.createType("Compact<u32>", toParaId),
+                          }),
+                        ],
+                      }),
+                    })
+                  }),
+                  fungibility: api.createType("FungibilityV2", {
+                    Fungible: api.createType("Compact<u128>", 3_000_000)
+                  })
+                }),
+                weightLimit: api.createType("WeightLimitV2", {
+                  Limited: api.createType("Compact<u64>", 10_000_000)
+                }),
+              }
+            }),
+            api.createType("InstructionV2", {
+              DepositAsset: {
+                assets: "MultiAssetFilterV2",
+                maxAssets: "u32",
+                beneficiary: "MultiLocationV2",
+              }
+            })
+          ])
+        }
+      }),
     ]
-    //WithdrawAsset: api.createType("XcmWithdrawAsset", {
-    //  assets: [
-    //    api.createType("MultiAsset", {
-    //      ConcreteFungible: api.createType("MultiAssetConcreteFungible", {
-    //        id: api.createType("MultiLocation", {
-    //          X1: api.createType("Junction", "Parent"),
-    //        }),
-    //        amount: api.createType("Compact<U128>", 10_000_000),
-    //      }),
-    //    }),
-    //    api.createType("MultiAsset", {
-    //      ConcreteFungible: api.createType("MultiAssetConcreteFungible", {
-    //        id: fromLocation,
-    //        amount: api.createType("Compact<U128>", amount),
-    //      }),
-    //    }),
-    //  ],
-    //  effects: [
-    //    api.createType("XcmOrder", {
-    //      BuyExecution: api.createType("XcmOrderBuyExecution", {
-    //        fees: api.createType("MultiAsset", "All"),
-    //        weight: 0,
-    //        debt: 3_000_000,
-    //        haltOnError: false,
-    //        xcm: [],
-    //      }),
-    //    }),
-    //    api.createType("XcmOrder", {
-    //      DepositReserveAsset: api.createType("XcmOrderDepositReserveAsset", {
-    //        assets: [api.createType("MultiAsset", "All")],
-    //        dest: api.createType("MultiLocation", {
-    //          X2: [
-    //            api.createType("Junction", "Parent"),
-    //            api.createType("Junction", {
-    //              Parachain: api.createType("Compact<U32>", toParaId),
-    //            }),
-    //          ],
-    //        }),
-    //        effects: [
-    //          api.createType("XcmOrder", {
-    //            BuyExecution: api.createType("XcmOrderBuyExecution", {
-    //              fees: api.createType("MultiAsset", "All"),
-    //              weight: 0,
-    //              debt: 3_000_000,
-    //              haltOnError: false,
-    //              xcm: [],
-    //            }),
-    //          }),
-    //          api.createType("XcmOrder", {
-    //            DepositAsset: api.createType("XcmOrderDepositAsset", {
-    //              assets: [api.createType("MultiAsset", "All")],
-    //              dest: api.createType("MultiLocation", {
-    //                X1: api.createType("Junction", {
-    //                  AccountId32: api.createType("AccountId32Junction", {
-    //                    network: api.createType("NetworkId", "Any"),
-    //                    id: toAddr,
-    //                  }),
-    //                }),
-    //              }),
-    //            }),
-    //          }),
-    //        ],
-    //      }),
-    //    }),
-    //  ],
-    //}),
+      //WithdrawAsset: api.createType("XcmWithdrawAsset", {
+      //  assets: [
+      //    api.createType("MultiAsset", {
+      //      ConcreteFungible: api.createType("MultiAssetConcreteFungible", {
+      //        id: api.createType("MultiLocation", {
+      //          X1: api.createType("Junction", "Parent"),
+      //        }),
+      //        amount: api.createType("Compact<U128>", 10_000_000),
+      //      }),
+      //    }),
+      //    api.createType("MultiAsset", {
+      //      ConcreteFungible: api.createType("MultiAssetConcreteFungible", {
+      //        id: fromLocation,
+      //        amount: api.createType("Compact<U128>", amount),
+      //      }),
+      //    }),
+      //  ],
+      //  effects: [
+      //    api.createType("XcmOrder", {
+      //      BuyExecution: api.createType("XcmOrderBuyExecution", {
+      //        fees: api.createType("MultiAsset", "All"),
+      //        weight: 0,
+      //        debt: 3_000_000,
+      //        haltOnError: false,
+      //        xcm: [],
+      //      }),
+      //    }),
+      //    api.createType("XcmOrder", {
+      //      DepositReserveAsset: api.createType("XcmOrderDepositReserveAsset", {
+      //        assets: [api.createType("MultiAsset", "All")],
+      //        dest: api.createType("MultiLocation", {
+      //          X2: [
+      //            api.createType("Junction", "Parent"),
+      //            api.createType("Junction", {
+      //              Parachain: api.createType("Compact<U32>", toParaId),
+      //            }),
+      //          ],
+      //        }),
+      //        effects: [
+      //          api.createType("XcmOrder", {
+      //            BuyExecution: api.createType("XcmOrderBuyExecution", {
+      //              fees: api.createType("MultiAsset", "All"),
+      //              weight: 0,
+      //              debt: 3_000_000,
+      //              haltOnError: false,
+      //              xcm: [],
+      //            }),
+      //          }),
+      //          api.createType("XcmOrder", {
+      //            DepositAsset: api.createType("XcmOrderDepositAsset", {
+      //              assets: [api.createType("MultiAsset", "All")],
+      //              dest: api.createType("MultiLocation", {
+      //                X1: api.createType("Junction", {
+      //                  AccountId32: api.createType("AccountId32Junction", {
+      //                    network: api.createType("NetworkId", "Any"),
+      //                    id: toAddr,
+      //                  }),
+      //                }),
+      //              }),
+      //            }),
+      //          }),
+      //        ],
+      //      }),
+      //    }),
+      //  ],
+      //}),
+    )
   });
 };
 

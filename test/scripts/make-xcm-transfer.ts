@@ -29,7 +29,7 @@ const createTransferXcm = (
             })
           }),
           weightLimit: api.createType("WeightLimitV2", {
-            Limited: api.createType("Compact<u64>", 10_000_000)
+            Limited: api.createType("Compact<u64>", 3_000_000)
           }),
         }
       }),
@@ -76,7 +76,7 @@ const createTransferXcm = (
                   })
                 }),
                 weightLimit: api.createType("WeightLimitV2", {
-                  Limited: api.createType("Compact<u64>", 10_000_000)
+                  Limited: api.createType("Compact<u64>", 3_000_000)
                 }),
               }
             }),

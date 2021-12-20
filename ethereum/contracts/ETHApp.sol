@@ -32,6 +32,9 @@ contract ETHApp is RewardSource, AccessControl {
     bytes32 public constant INBOUND_CHANNEL_ROLE =
         keccak256("INBOUND_CHANNEL_ROLE");
 
+    bytes32 public constant CHANNEL_UPGRADE_ROLE =
+        keccak256("CHANNEL_UPGRADE_ROLE");
+
     constructor(
         address rewarder,
         Channel memory _basic,
@@ -47,6 +50,8 @@ contract ETHApp is RewardSource, AccessControl {
         c2.inbound = _incentivized.inbound;
         c2.outbound = _incentivized.outbound;
 
+        _setupRole(CHANNEL_UPGRADE_ROLE, msg.sender);
+        _setRoleAdmin(INBOUND_CHANNEL_ROLE, CHANNEL_UPGRADE_ROLE);
         _setupRole(REWARD_ROLE, rewarder);
         _setupRole(INBOUND_CHANNEL_ROLE, _basic.inbound);
         _setupRole(INBOUND_CHANNEL_ROLE, _incentivized.inbound);
@@ -109,5 +114,23 @@ contract ETHApp is RewardSource, AccessControl {
         onlyRole(REWARD_ROLE)
     {
         _recipient.transfer(_amount);
+    }
+
+    function upgrade(
+        Channel memory _basic,
+        Channel memory _incentivized
+    ) external onlyRole(CHANNEL_UPGRADE_ROLE) {
+        Channel storage c1 = channels[ChannelId.Basic];
+        Channel storage c2 = channels[ChannelId.Incentivized];
+        // revoke old channel
+        revokeRole(INBOUND_CHANNEL_ROLE, c1.inbound);
+        revokeRole(INBOUND_CHANNEL_ROLE, c2.inbound);
+        // set new channel
+        c1.inbound = _basic.inbound;
+        c1.outbound = _basic.outbound;
+        c2.inbound = _incentivized.inbound;
+        c2.outbound = _incentivized.outbound;
+        grantRole(INBOUND_CHANNEL_ROLE, _basic.inbound);
+        grantRole(INBOUND_CHANNEL_ROLE, _incentivized.inbound);
     }
 }
